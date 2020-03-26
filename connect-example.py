@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import nuki
 from nacl.public import PrivateKey
 import sys

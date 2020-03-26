@@ -136,7 +136,7 @@ class Nuki_AUTH_DATA(Nuki_Command):
 	def createPayload(self, publicKeyNuki, privateKeyAuth, publicKeyAuth, nonceNuki, appID, idType, name):
 		self.appID = ("%x" % appID).rjust(8,'0')
 		self.idType = idType
-		self.name = name.hex().ljust(64, '0')
+		self.name = name.encode().hex().ljust(64, '0')
 		self.nonce = nacl.utils.random(32).hex()
 		sharedKey = crypto_box_beforenm(bytes(bytearray.fromhex(publicKeyNuki)),bytes(bytearray.fromhex(privateKeyAuth))).hex()
 		valueR = self.idType + self.appID + self.name + self.nonce + nonceNuki
@@ -176,7 +176,7 @@ class Nuki_AUTH_ID_CONFIRM(Nuki_Command):
 		return "Nuki_AUTH_ID_CONFIRM\n\tAuthenticator: %s\n\tAuthorization ID: %s" % (self.authenticator, self.authID)
 		
 	def createPayload(self, publicKeyNuki, privateKeyAuth, publicKeyAuth, nonceNuki, authID):
-		self.authID = ("%x" % authID).rjust(8,'0')
+		self.authID = ("%x" % authID).rjust(8, '0')
 		sharedKey = crypto_box_beforenm(bytes(bytearray.fromhex(publicKeyNuki)),bytes(bytearray.fromhex(privateKeyAuth))).hex()
 		valueR = self.authID + nonceNuki
 		self.authenticator = hmac.new(bytearray.fromhex(sharedKey), msg=bytearray.fromhex(valueR), digestmod=hashlib.sha256).hexdigest()
@@ -431,7 +431,7 @@ class NukiCommandParser:
 			command = self.byteSwapper.swap(commandString[:4]).upper()
 			payload = commandString[4:-4]
 			crc = self.byteSwapper.swap(commandString[-4:])
-			print(f"command = {command}, payload = {payload}, crc = {crc}")
+			print("command = {}, payload = {}, crc = {}" % (command, payload, crc))
 			if command == '0001':
 				return Nuki_REQ(payload)
 			elif command == '0003':
