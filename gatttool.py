@@ -400,7 +400,7 @@ class GATTToolBackend(BLEBackend):
         msg = event["after"]
         hex_handle, _, hex_values = msg.strip().split(None, 5)[3:]
         handle = int(hex_handle, 16)
-        values = bytearray(hex_values.replace(" ", "").decode("hex"))
+        values = bytearray.fromhex(hex_values.replace(" ", ""))
         if self._connected_device is not None:
             self._connected_device.receive_notification(handle, values)
 
@@ -431,7 +431,7 @@ class GATTToolBackend(BLEBackend):
 				       	self._receiver.wait("indication", timeout=2)
 					self._receiver.clear("indication")
 				except NotificationTimeout:
-					waitingForIndications = False 
+					waitingForIndications = False
 		except NotificationTimeout:
                 	log.error("No response received", exc_info=True)
                 	raise

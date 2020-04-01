@@ -400,7 +400,7 @@ class GATTToolBackend(BLEBackend):
     msg = event["after"]
     hex_handle, _, hex_values = msg.strip().split(None, 5)[3:]
     handle = int(hex_handle, 16)
-    values = bytearray(hex_values.replace(" ", "").decode("hex"))
+    values = bytearray.fromhex(hex_values)
     if self._connected_device is not None:
       self._connected_device.receive_notification(handle, values)
 
