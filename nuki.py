@@ -166,7 +166,7 @@ class Nuki():
         if commandParsed.command != '000E':
             sys.exit("Nuki returned unexpected response (expecting STATUS): %s" % commandParsed.show())
         print("STATUS received: %s" % commandParsed.status)
-        with open('/home/pi/nuki/nuki.cfg', 'wb') as configfile:
+        with open('/home/pi/nuki/nuki.cfg', 'w') as configfile:
             self.config.write(configfile)
         return commandParsed.status
 

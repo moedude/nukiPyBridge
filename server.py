@@ -1,10 +1,10 @@
 from flask import Flask 
-from configparser import SafeConfigParser 
+from configparser import ConfigParser 
 import nuki 
 from nacl.public import PrivateKey 
 from flask import jsonify
 
-parser = SafeConfigParser()
+parser = ConfigParser()
 parser.read('nuki.cfg')
 
 app = Flask(__name__)
