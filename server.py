@@ -37,19 +37,23 @@ def connect(mac_address, name):
     nuki.Nuki(mac_address).authenticateUser(myPublicKeyHex, myPrivateKeyHex, myID, myIDType, name)
     return "Connected to " + mac_address
 
-@app.route("/lock/<door>")
+@app.route("/<door>/lock")
 def lock_door(door):
     return execute_action('LOCK', door)
 
-@app.route("/unlock/<door>")
+@app.route("/<door>/unlock")
 def unlock_door(door):
     return execute_action('UNLOCK', door)
 
-@app.route("/state/<door>")
+@app.route("/<door>/open")
+def open_door(door):
+    return execute_action('UNLATCH', door)
+
+@app.route("/<door>/state")
 def state(door):
     return nuki.Nuki(config[door]).readLockState().show()
 
-@app.route("/logs/<door>")
+@app.route("/<door>/logs")
 def get_log_entries(door):
     return jsonify(nuki.Nuki(config[door]).getLogEntries(1, "%04x" % 0000))
 

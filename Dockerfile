@@ -1,6 +1,5 @@
 # Pull base image
 FROM python:3.7.6-stretch
-MAINTAINER Gert-Jan Compagner
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -42,12 +41,13 @@ RUN make install
 #RUN mv /usr/lib/arm-linux-gnueabihf/libboost_python-py27.so.1.55.0 /usr/lib/arm-linux-gnueabihf/libboost_python-py27.so.1.55.0-old
 #RUN ln -s /usr/lib/arm-linux-gnueabihf/libboost_python-py34.so.1.55.0 /usr/lib/arm-linux-gnueabihf/libboost_python-py27.so.1.55.0
 
-COPY gatttool.py /usr/local/lib/python2.7/dist-packages/pygatt/backends/gatttool/gatttool.py
+COPY gatttool-docker.py /usr/local/lib/python3.7/dist-packages/pygatt/backends/gatttool/gatttool.py
 COPY . /opt/nuki
 
 RUN pip install flask
 
 ENV FLASK_APP server.py
+ENV FLASK_RUN_PORT 10000
 
 WORKDIR /opt/nuki 
 
