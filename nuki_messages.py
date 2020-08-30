@@ -205,7 +205,8 @@ class Nuki_STATES(Nuki_Command):
 		self.criticalBattery = ''
 		if payload != "N/A":
 			payload = payload.upper()
-			self.nukiState = payload[:2]
+			#print("Payload = " + str(payload))
+			self.nukiState = payload[0:2]
 			if self.nukiState == '00':
 				self.nukiState = 'Uninitialized'
 			elif self.nukiState == '01':
@@ -253,9 +254,20 @@ class Nuki_STATES(Nuki_Command):
 				self.criticalBattery = 'OK'
 			elif self.criticalBattery == '01':
 				self.criticalBattery = 'Critical'
+			self.Doorsensor = payload[36:38]
+			if self.Doorsensor == '01':
+				self.Doorsensor = 'deactivated'
+			elif self.Doorsensor =='02':
+				self.Doorsensor = 'door closed'
+			elif self.Doorsensor =='03':
+				self.Doorsensor = 'door opened'
+			elif self.Doorsensor =='04':
+				self.Doorsensor = 'door state unknown'
+			elif self.Doorsensor =='05':
+				self.Doorsensor = 'calibrating'
 
 	def show(self):
-		return "Nuki_STATES\n\tNuki Status: %s\n\tLock Status: %s\n\tTrigger: %s\n\tCurrent Time: %s\n\tTime Offset: %s\n\tCritical Battery: %s" % (self.nukiState,self.lockState,self.trigger,self.currentTime,self.timeOffset,self.criticalBattery)
+		return "Nuki_STATES\n\tNuki Status: %s\n\tLock Status: %s\n\tTrigger: %s\n\tCurrent Time: %s\n\tTime Offset: %s\n\tCritical Battery: %s\n\tDoorsensor State: %s" % (self.nukiState,self.lockState,self.trigger,self.currentTime,self.timeOffset,self.criticalBattery,self.Doorsensor)
 
 class Nuki_LOCK_ACTION(Nuki_Command):
 	def __init__(self, payload="N/A"):
