@@ -50,6 +50,7 @@ RUN pip install flask
 
 ENV FLASK_APP server.py
 ENV FLASK_RUN_PORT 10000
+ENV FLASK_DEBUG 1
 
 WORKDIR /opt/nuki 
 
