@@ -190,7 +190,7 @@ class Nuki():
         self._charWriteResponse = ""
         self.device.char_write_handle(keyturnerUSDIOHandle, stateReqEncryptedCommand, True, 3)
         print("Nuki State Request sent: %s\nresponse received: %s" % (stateReq.show(), self._charWriteResponse))
-        time.sleep(1)
+        time.sleep(2)
         commandParsed = self.parser.decrypt(self._charWriteResponse, self.config.get(self.macAddress, 'publicKeyNuki'),
                                             self.config.get(self.macAddress, 'privateKeyHex'))[8:]
         if self.parser.isNukiCommand(commandParsed) == False:
@@ -216,7 +216,7 @@ class Nuki():
         self._charWriteResponse = ""
         self.device.char_write_handle(keyturnerUSDIOHandle, challengeReqEncryptedCommand, True, 4)
         print("Nuki CHALLENGE Request sent: %s" % challengeReq.show())
-        time.sleep(1)
+        time.sleep(2)
         commandParsed = self.parser.decrypt(self._charWriteResponse, self.config.get(self.macAddress, 'publicKeyNuki'),
                                             self.config.get(self.macAddress, 'privateKeyHex'))[8:]
         if self.parser.isNukiCommand(commandParsed) == False:
@@ -235,7 +235,7 @@ class Nuki():
         self._charWriteResponse = ""
         self.device.char_write_handle(keyturnerUSDIOHandle, lockActionReqEncryptedCommand, True, 4)
         print("Nuki Lock Action Request sent: %s" % lockActionReq.show())
-        time.sleep(1)
+        time.sleep(2)
         commandParsed = self.parser.decrypt(self._charWriteResponse, self.config.get(self.macAddress, 'publicKeyNuki'),
                                             self.config.get(self.macAddress, 'privateKeyHex'))[8:]
         if self.parser.isNukiCommand(commandParsed) == False:

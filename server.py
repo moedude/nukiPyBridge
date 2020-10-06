@@ -3,11 +3,14 @@ from configparser import ConfigParser
 import nuki 
 from nacl.public import PrivateKey 
 from flask import jsonify
+import logging
 
 parser = ConfigParser()
 parser.read('nuki.cfg')
 
 app = Flask(__name__)
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 def parse_config():
     config_dict = {}
@@ -22,6 +25,8 @@ print(config)
 
 @app.route("/")
 def get_config():
+    app.logger.info("test")
+    log.info("Test original log!")
     return config
 
 @app.route("/connect/<mac_address>/<name>")
