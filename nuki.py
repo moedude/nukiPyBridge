@@ -13,13 +13,10 @@ import bluetooth._bluetooth as bluez
 from pathlib import Path
 from retry import retry
 
-cwd = Path.cwd()
-configfile = cwd.joinpath('nuki.cfg')
-
 class Nuki():
     # creates BLE connection with NUKI
     #	-macAddress: bluetooth mac-address of your Nuki Lock
-    def __init__(self, macAddress, cfg = configfile):
+    def __init__(self, macAddress, cfg):
         self._charWriteResponse = ""
         self.parser = nuki_messages.NukiCommandParser()
         self.crcCalculator = CrcCalculator()
@@ -27,6 +24,7 @@ class Nuki():
         self.macAddress = macAddress
         self.config = configparser.RawConfigParser()
         self.config.read(cfg)
+        self.configfile = cfg
         self.device = None
 
     def _makeBLEConnection(self, retries=3):
@@ -89,7 +87,6 @@ class Nuki():
     #	-IDType : '00' for 'app', '01' for 'bridge' and '02' for 'fob'
     #	-name : a unique name to identify yourself to the Nuki Lock (will also appear in the logs of the Nuki Lock)
     def authenticateUser(self, publicKeyHex, privateKeyHex, ID, IDType, name):
-        global configfile
         self._makeBLEConnection()
         if self.device == None:
             return
@@ -176,7 +173,7 @@ class Nuki():
         if commandParsed.command != '000E':
             sys.exit("Nuki returned unexpected response (expecting STATUS): %s" % commandParsed.show())
         print("STATUS received: %s" % commandParsed.status)
-        with open(configfile, 'w') as configfile:
+        with open(self.configfile, 'w') as configfile:
             self.config.write(configfile)
         return commandParsed.status
 
