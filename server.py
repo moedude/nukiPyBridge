@@ -25,8 +25,6 @@ print(config)
 
 @app.route("/")
 def get_config():
-    app.logger.info("test")
-    log.info("Test original log!")
     return config
 
 @app.route("/connect/<mac_address>/<name>")
