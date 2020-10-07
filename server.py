@@ -62,13 +62,13 @@ def open_door(door):
 
 @app.route("/<door>/state")
 def state(door):
-    return nuki.Nuki(config[door]).readLockState().show()
+    return nuki.Nuki(config[door], configfile).readLockState().show()
 
 @app.route("/<door>/logs")
 def get_log_entries(door):
-    return jsonify(nuki.Nuki(config[door]).getLogEntries(1, "%04x" % 0000))
+    return jsonify(nuki.Nuki(config[door], configfile).getLogEntries(1, "%04x" % 0000))
 
 def execute_action(type, door):
-    nuki.Nuki(config[door]).lockAction(type)
+    nuki.Nuki(config[door], configfile).lockAction(type)
     return type
 
