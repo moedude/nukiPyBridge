@@ -4,8 +4,6 @@ services:
         image: giejay/nuki-bridge
         environment:
           - PYTHONUNBUFFERED=true
-        ports: 
-          - 10000:10000
         volumes:
           - ./nuki.cfg:/opt/nuki/nuki.cfg
         privileged: true
