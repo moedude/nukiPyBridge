@@ -214,18 +214,22 @@ class Nuki():
         if self.device == None:
             return
         
-        print("Retrieving handle")
-        keyturnerUSDIOHandle = self.device.get_handle("a92ee202-5501-11e4-916c-0800200c9a66")
-        print("Handle retrieved")
-        self.device.subscribe('a92ee202-5501-11e4-916c-0800200c9a66', self._handleCharWriteResponse, indication=True)
-        print("Subscribed to device")
-
+        keyturnerUSDIOHandle = self.getHandle()
         self.executeChallenge(keyturnerUSDIOHandle)
         commandParsed = self.parseChallengeResponse()
         self.executeLockAction(keyturnerUSDIOHandle, lockAction, commandParsed)
         self.checkLockActionResponse()
         
         print("Done in {} seconds".format((int(time.time()) - epoch_time)))
+
+    @retry(Exception, tries=8, delay=0.5)
+    def getHandle(self):
+        print("Retrieving handle")
+        keyturnerUSDIOHandle = self.device.get_handle("a92ee202-5501-11e4-916c-0800200c9a66")
+        print("Handle retrieved")
+        self.device.subscribe('a92ee202-5501-11e4-916c-0800200c9a66', self._handleCharWriteResponse, indication=True)
+        print("Subscribed to device")
+        return keyturnerUSDIOHandle
     
     @retry(Exception, tries=8, delay=0.5)
     def executeChallenge(self, keyturnerUSDIOHandle):
