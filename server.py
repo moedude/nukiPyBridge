@@ -10,7 +10,7 @@ parser.read('nuki.cfg')
 
 app = Flask(__name__)
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 def parse_config():
     config_dict = {}

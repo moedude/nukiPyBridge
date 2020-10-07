@@ -11,6 +11,7 @@ import configparser
 import blescan
 import bluetooth._bluetooth as bluez
 from pathlib import Path
+from retry import retry
 
 cwd = Path.cwd()
 configfile = cwd.joinpath('nuki.cfg')
@@ -43,7 +44,10 @@ class Nuki():
                 except:
                     currentTries += 1
                     print("Unable to connect, retrying..., retry count: " + str(currentTries))
-        print("Nuki BLE connection established")
+            if self.device == None:
+                print("Could not connect after " + str(currentTries) + " tries")
+            else:
+                print("Nuki BLE connection established")
 
     def isNewNukiStateAvailable(self):
         if self.device != None:
@@ -87,6 +91,8 @@ class Nuki():
     def authenticateUser(self, publicKeyHex, privateKeyHex, ID, IDType, name):
         global configfile
         self._makeBLEConnection()
+        if self.device == None:
+            return
         self.config.remove_section(self.macAddress)
         self.config.add_section(self.macAddress)
         pairingHandle = self.device.get_handle('a92ee101-5501-11e4-916c-0800200c9a66')
@@ -177,6 +183,8 @@ class Nuki():
     # method to read the current lock state of the Nuki Lock
     def readLockState(self):
         self._makeBLEConnection()
+        if self.device == None:
+            return
         keyturnerUSDIOHandle = self.device.get_handle("a92ee202-5501-11e4-916c-0800200c9a66")
         self.device.subscribe('a92ee202-5501-11e4-916c-0800200c9a66', self._handleCharWriteResponse, indication=True)
         stateReq = nuki_messages.Nuki_REQ('000C')
@@ -204,9 +212,27 @@ class Nuki():
     # method to perform a lock action on the Nuki Lock:
     #	-lockAction: 'UNLOCK', 'LOCK', 'UNLATCH', 'LOCKNGO', 'LOCKNGO_UNLATCH', 'FOB_ACTION_1', 'FOB_ACTION_2' or 'FOB_ACTION_3'
     def lockAction(self, lockAction):
+        epoch_time = int(time.time())
         self._makeBLEConnection()
+        if self.device == None:
+            return
+        
+        print("Retrieving handle")
         keyturnerUSDIOHandle = self.device.get_handle("a92ee202-5501-11e4-916c-0800200c9a66")
+        print("Handle retrieved")
         self.device.subscribe('a92ee202-5501-11e4-916c-0800200c9a66', self._handleCharWriteResponse, indication=True)
+        print("Subscribed to device")
+
+        self.executeChallenge(keyturnerUSDIOHandle)
+        commandParsed = self.parseChallengeResponse()
+        self.executeLockAction(keyturnerUSDIOHandle, lockAction, commandParsed)
+        self.checkLockActionResponse()
+        
+        print("Done in {} seconds".format((int(time.time()) - epoch_time)))
+    
+    @retry(Exception, tries=8, delay=0.5)
+    def executeChallenge(self, keyturnerUSDIOHandle):
+        print("Going to execute challenge")
         challengeReq = nuki_messages.Nuki_REQ('0004')
         challengeReqEncrypted = nuki_messages.Nuki_EncryptedCommand(
             authID=self.config.get(self.macAddress, 'authorizationID'), nukiCommand=challengeReq,
@@ -216,7 +242,9 @@ class Nuki():
         self._charWriteResponse = ""
         self.device.char_write_handle(keyturnerUSDIOHandle, challengeReqEncryptedCommand, True, 4)
         print("Nuki CHALLENGE Request sent: %s" % challengeReq.show())
-        time.sleep(2)
+
+    @retry(Exception, tries=8, delay=0.5)
+    def parseChallengeResponse(self):
         commandParsed = self.parser.decrypt(self._charWriteResponse, self.config.get(self.macAddress, 'publicKeyNuki'),
                                             self.config.get(self.macAddress, 'privateKeyHex'))[8:]
         if self.parser.isNukiCommand(commandParsed) == False:
@@ -225,6 +253,10 @@ class Nuki():
         if commandParsed.command != '0004':
             sys.exit("Nuki returned unexpected response (expecting Nuki CHALLENGE): %s" % commandParsed.show())
         print("Challenge received: %s" % commandParsed.nonce)
+        return commandParsed
+
+    @retry(Exception, tries=8, delay=0.5)
+    def executeLockAction(self, keyturnerUSDIOHandle, lockAction, commandParsed):
         lockActionReq = nuki_messages.Nuki_LOCK_ACTION()
         lockActionReq.createPayload(self.config.getint(self.macAddress, 'ID'), lockAction, commandParsed.nonce)
         lockActionReqEncrypted = nuki_messages.Nuki_EncryptedCommand(
@@ -235,7 +267,9 @@ class Nuki():
         self._charWriteResponse = ""
         self.device.char_write_handle(keyturnerUSDIOHandle, lockActionReqEncryptedCommand, True, 4)
         print("Nuki Lock Action Request sent: %s" % lockActionReq.show())
-        time.sleep(2)
+
+    @retry(Exception, tries=8, delay=0.5)
+    def checkLockActionResponse(self):
         commandParsed = self.parser.decrypt(self._charWriteResponse, self.config.get(self.macAddress, 'publicKeyNuki'),
                                             self.config.get(self.macAddress, 'privateKeyHex'))[8:]
         if self.parser.isNukiCommand(commandParsed) == False:

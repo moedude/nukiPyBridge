@@ -4,42 +4,27 @@ This python library let's you talk with Nuki lock (https://nuki.io/en/)
 
 ## Get started
 1. install a BLE-compatible USB dongle (or use the built-in bluetooth stack if available)
-2. sudo apt-get install libffi-dev libbluetooth-dev
-3. install bluez (https://learn.adafruit.com/install-bluez-on-the-raspberry-pi/installation)
-4. install pygatt (pip3 install pygatt)
-5. replace the /usr/local/lib/python3.x/dist-packages/pygatt/backends/gatttool/gatttool.py file with the file from this repository.
-6. install nacl (pip3 install pynacl)
-7. install crc16 (pip3 install crc16)
-8. install pybluez (pip3 install pybluez)
-9. install pexpect (pip3 install pexpect)
-10. ready to start using the library in python!
+2. execute the script: install-bluetooth-deps.sh, make sure it fully finishes.
+3. Modify bluetooth service: nano /lib/systemd/system/bluetooth.service
+4. add --experimental to ExecStart: ExecStart=/usr/local/libexec/bluetooth/bluetoothd --experimental  
+5. Use supervise service to start nuki-bridge: sudo supervisorctl start nuki
+6. ready to start using the library in python!
+
+## Get started - Docker (only for ARM like raspberry pi)
+1. Install docker and docker-compose
+2. Use the docker-compose.yml in this repo to start the container: docker-compose up -d
+3. Check the logs: docker-compose logs -f nuki 
+4. Hit the url to check if its working: http://localhost:10000. You should see: {}
 
 ## Example usage
 ### Authenticate
-Before you will be able to send commands to the Nuki lock using the library, you must first authenticate (once!) yourself with a self-generated public/private keypair (using NaCl):
-```python
-#!/usr/bin/env python3
+Before you will be able to send commands to the Nuki lock using the library, you must first authenticate (once!) yourself with a self-generated public/private keypair (using NaCl), you can use the flask endpoint:
 
-import nuki_messages
-import nuki
-from nacl.public import PrivateKey
+http://localhost:10000/connect/{MAC_ADDRESS}/{NAME}
 
-nukiMacAddress = "00:00:00:00:00:01"
-# generate the private key which must be kept secret
-keypair = PrivateKey.generate()
-myPublicKeyHex = keypair.public_key.__bytes__().hex()
-myPrivateKeyHex = keypair.__bytes__().hex()
-myID = 50
-# id-type = 00 (app), 01 (bridge) or 02 (fob)
-# take 01 (bridge) if you want to make sure that the 'new state available'-flag is cleared on the Nuki if you read it out the state using this library
-myIDType = '01'
-myName = "PiBridge"
+For example: http://localhost:10000/connect/56:D2:72:54:1A:91/Reardoor
 
-nuki = nuki.Nuki(nukiMacAddress)
-nuki.authenticateUser(myPublicKeyHex, myPrivateKeyHex, myID, myIDType, myName)
-```
-
-**REMARK 1** The credentials are stored in the file (hard-coded for the moment in nuki.py) : /home/pi/nuki/nuki.cfg
+**REMARK 1** The credentials are stored in the file: nuki.cfg, created on a first connect
 
 **REMARK 2** Authenticating is only possible if the lock is in 'pairing mode'. You can set it to this mode by pressing the button on the lock for 5 seconds until the complete LED ring starts to shine.
 
@@ -49,28 +34,8 @@ nuki.authenticateUser(myPublicKeyHex, myPrivateKeyHex, myID, myIDType, myName)
 
 ### Commands for Nuki
 Once you are authenticated (and the nuki.cfg file is created on your system), you can use the library to send command to your Nuki lock:
-```python
-#!/usr/bin/env python3
 
-import nuki_messages
-import nuki
+http://localhost:10000/Reardoor/unlock
+http://localhost:10000/Reardoor/lock
 
-nukiMacAddress = "00:00:00:00:00:01"
-Pin = "%04x" % 1234
-
-nuki = nuki.Nuki(nukiMacAddress)
-nuki.readLockState()
-nuki.lockAction("UNLOCK")
-logs = nuki.getLogEntries(10,Pin)
-print("received %d log entries" % len(logs))
-
-available = nuki.isNewNukiStateAvailable()
-print("New state available: %d" % available)
-```
-**REMARK** the method ```isNewNukiStateAvailable()``` only works if you run your python script as root (sudo) or if you allow some capabilites. See below. All the other methods do not require root privileges
-
-### isNewNukiStateAvailable() without root
-If you want to run isNewNukiStateAvailable() without root, allow python to use the cap_net_raw+eip capability:
-```bash
- sudo setcap cap_net_raw+eip $(eval readlink -f `which python`)
- ```
+For more endpoints, check server.py
