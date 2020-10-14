@@ -11,14 +11,13 @@ configfile = cwd.joinpath('nuki.cfg')
 
 print("Config file: {}".format(configfile))
 
-parser = ConfigParser()
-parser.read('nuki.cfg')
-
 app = Flask(__name__)
 log = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 def parse_config():
+    parser = ConfigParser()
+    parser.read('nuki.cfg')
     config_dict = {}
     for sect in parser.sections():
         for name, value in parser.items(sect):

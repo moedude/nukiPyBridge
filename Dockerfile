@@ -47,7 +47,7 @@ COPY gatttool-docker.py /usr/local/lib/python3.7/site-packages/pygatt/backends/g
 RUN pip install flask retry
 
 ENV FLASK_APP server.py
-ENV FLASK_RUN_PORT 10000
+ENV FLASK_RUN_PORT 5000
 ENV FLASK_DEBUG 1
 
 COPY . /opt/nuki
