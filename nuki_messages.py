@@ -249,11 +249,16 @@ class Nuki_STATES(Nuki_Command):
 			second = int(payload[18:20],16)
 			self.currentTime = "%02d-%02d-%d %02d:%02d:%02d" % (day,month,year,hour,minute,second)
 			self.timeOffset = int(self.byteSwapper.swap(payload[20:24]),16)
-			self.criticalBattery = payload[24:26]
-			if self.criticalBattery == '00':
+			self.Battery = bin(int(payload[24:26], 16))[2:].zfill(8)
+			if self.Battery[7:8] == '0':
 				self.criticalBattery = 'OK'
-			elif self.criticalBattery == '01':
+			elif self.Battery[7:8] == '1':
 				self.criticalBattery = 'Critical'
+			if self.Battery[6:7] == '0':
+				self.chargingBattery = 'Not Charging'
+			elif self.Battery[6:7] == '1':
+				self.chargingBattery = 'Charging'
+			self.BatteryPercentage = int(self.Battery[:6],2)*2
 			self.Doorsensor = payload[36:38]
 			if self.Doorsensor == '01':
 				self.Doorsensor = 'deactivated'
@@ -267,7 +272,7 @@ class Nuki_STATES(Nuki_Command):
 				self.Doorsensor = 'calibrating'
 
 	def show(self):
-		return "Nuki_STATES\n\tNuki Status: %s\n\tLock Status: %s\n\tTrigger: %s\n\tCurrent Time: %s\n\tTime Offset: %s\n\tCritical Battery: %s\n\tDoorsensor State: %s" % (self.nukiState,self.lockState,self.trigger,self.currentTime,self.timeOffset,self.criticalBattery,self.Doorsensor)
+		return "Nuki_STATES\n\tNuki Status: %s\n\tLock Status: %s\n\tTrigger: %s\n\tCurrent Time: %s\n\tTime Offset: %s\n\tCritical Battery: %s\n\tCharging Battery: %s\n\tBattery Percentage: %d\n\tDoorsensor State: %s" % (self.nukiState,self.lockState,self.trigger,self.currentTime,self.timeOffset,self.criticalBattery,self.chargingBattery,self.BatteryPercentage,self.Doorsensor)
 
 class Nuki_LOCK_ACTION(Nuki_Command):
 	def __init__(self, payload="N/A"):
@@ -327,7 +332,7 @@ class Nuki_LOG_ENTRIES_REQUEST(Nuki_Command):
 		return "Nuki_LOCK_ENTRIES_REQUEST\n\tMost Recent: %s\n\tStart Index: %s\n\tCount: %s\n\tNonce: %s\n\tPIN: %s" % (self.mostRecent,self.startIndex,self.count,self.nonce,self.pin)
 
 	def createPayload(self, count, nonce, pin):
-		self.mostRecent = '01'		
+		self.mostRecent = '01'
 		self.startIndex = self.byteSwapper.swap("%04x" % 0)
 		self.count = self.byteSwapper.swap("%04x" % count)
 		self.nonce = nonce
