@@ -69,6 +69,6 @@ def get_log_entries(door):
     return jsonify(nuki.Nuki(config[door], configfile).getLogEntries(1, "%04x" % 0000))
 
 def execute_action(type, door):
-    nuki.Nuki(config[door], configfile).lockAction(type)
-    return type
+    return nuki.Nuki(config[door], configfile).lockAction(type).show()
+
 
