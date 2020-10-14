@@ -491,7 +491,7 @@ class NukiCommandParser:
 		return msgList
 
 	def decrypt(self, msg, publicKey, privateKey):
-		#print "msg: %s" % msg
+		print("msg: %s" % msg)
 		nonce = msg[:48]
 		#print "nonce: %s" % nonce
 		authID = msg[48:56]
