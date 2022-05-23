@@ -272,7 +272,20 @@ class Nuki_STATES(Nuki_Command):
 				self.Doorsensor = 'calibrating'
 
 	def show(self):
-		return "Nuki_STATES\n\tNuki Status: %s\n\tLock Status: %s\n\tTrigger: %s\n\tCurrent Time: %s\n\tTime Offset: %s\n\tCritical Battery: %s\n\tCharging Battery: %s\n\tBattery Percentage: %d\n\tDoorsensor State: %s" % (self.nukiState,self.lockState,self.trigger,self.currentTime,self.timeOffset,self.criticalBattery,self.chargingBattery,self.BatteryPercentage,self.Doorsensor)
+		return: "{
+  "Nuki_STATES": {
+    "Nuki_Status": %s,
+    "Lock_Status":%s,
+    "Trigger":%s,
+    "Current_Time":%s,
+    "Time_Offset": %s,
+    "Critical_Battery":%s,
+    "Charging_Battery":%s,
+    "Battery_Percentage":%s,
+    "Doorsensor_State":%s
+  }
+}"  % (self.nukiState,self.lockState,self.trigger,self.currentTime,self.timeOffset,self.criticalBattery,self.chargingBattery,self.BatteryPercentage,self.Doorsensor)
+		#return "Nuki_STATES\n\tNuki Status: %s\n\tLock Status: %s\n\tTrigger: %s\n\tCurrent Time: %s\n\tTime Offset: %s\n\tCritical Battery: %s\n\tCharging Battery: %s\n\tBattery Percentage: %d\n\tDoorsensor State: %s" % (self.nukiState,self.lockState,self.trigger,self.currentTime,self.timeOffset,self.criticalBattery,self.chargingBattery,self.BatteryPercentage,self.Doorsensor)
 
 class Nuki_LOCK_ACTION(Nuki_Command):
 	def __init__(self, payload="N/A"):
